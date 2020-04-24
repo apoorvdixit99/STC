@@ -1,0 +1,66 @@
+#import statements
+import pandas as pd
+import numpy as np
+
+#Make a 2D array of features from Database.csv
+db = pd.read_pickle('database2.csv')
+db = db[0:4999]
+folder_id = db['folder_id']
+feature = db.iloc[:,2].values
+fnp = np.ndarray(shape=(4999,320))
+for f in range(4999):
+	for e in range(320):
+		fnp[f][e] = feature[f][0][e]
+		
+db = pd.read_pickle('db_new_small.csv')
+folder_id = db['folder_id']
+feature = db.iloc[:,2].values
+fnp = np.ndarray(shape=(25,320))
+for f in range(25):
+	for e in range(320):
+		fnp[f][e] = feature[f][0][e]
+		
+#Save Features
+np.savez_compressed('features',features=fnp)
+
+#Load Features
+fnp = np.load('features.npz')
+fnp = fnp['features']
+
+#Load Small Features
+fnp = np.load('fsmall.npz')
+fnp = fnp['features']
+
+
+#Apply PCA
+from sklearn.decomposition import PCA
+pca = PCA(2)
+pca.fit(fnp)
+f_pca = pca.transform(fnp)
+f_pca.shape
+
+#Apply TSNE
+from sklearn.manifold import TSNE
+tsne = TSNE().fit_transform(fnp)
+
+#Save features after TSNE
+np.savez_compressed('features_tsne',features_tsne=tsne)
+
+#Load TSNE Features
+tsne = np.load('features_tsne.npz')
+tsne = tsne['features_tsne']
+
+#Plotting functions
+import matplotlib.pyplot as plt
+plt.scatter(tsne[:,0],tsne[:,1],s=1)
+plt.show()
+
+#Plotting functions
+import matplotlib.pyplot as plt
+plt.scatter(f_pca[:,0],f_pca[:,1],s=5)
+plt.show()
+
+#History of Python Shell
+import readline
+for i in range(readline.get_current_history_length()):
+	print readline.get_history_item(i + 1)
